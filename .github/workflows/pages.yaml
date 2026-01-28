@@ -1,0 +1,42 @@
+name: Github Pages
+on:
+  pull_request:
+  push:
+    branches: ["main"]
+
+permissions: {}
+
+jobs:
+  build:
+    name: "Build demo"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: oven-sh/setup-bun@v2
+        with:
+          no-cache: true
+
+      - run: bun install --frozen-lockfile
+
+      - name: "Build demo"
+        run: bun run build
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist/
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+
+    permissions:
+      pages: write # to deploy to Pages
+      id-token: write # to verify the deployment originates from an appropriate source
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+
+        uses: actions/deploy-pages@v4
